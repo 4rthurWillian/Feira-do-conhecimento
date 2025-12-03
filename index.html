@@ -16,7 +16,24 @@
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #0f172a; /* Cor de fundo do jogo */
+            background-color: #0f172a;
+        }
+        
+        /* ESTILOS PARA IMPEDIR ARRASTE E SELEÇÃO DE IMAGENS */
+        .no-drag {
+            -webkit-user-drag: none;
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            pointer-events: none;
+        }
+        
+        .select-none {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
     </style>
 </head>
@@ -24,7 +41,6 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Importações do Lucide foram removidas e substituídas por Emojis para compatibilidade com o CDN/Babel
         const { useState, useEffect } = React;
 
         // Função utilitária para embaralhar um array (Fisher-Yates)
@@ -195,25 +211,24 @@
         ];
 
         const MAX_ATTEMPTS = 4;
-        const INITIAL_REVEAL_PERCENT = 4; // Começa minúsculo (4%)
-        const REVEAL_INCREMENT = 4; // Cresce quase nada a cada erro (4%)
-        const GAME_TIME_LIMIT = 120; // 2 minutos em segundos para acertar UMA pessoa
+        const INITIAL_REVEAL_PERCENT = 4;
+        const REVEAL_INCREMENT = 4;
+        const GAME_TIME_LIMIT = 120;
 
         function App() {
           const [currentCeleb, setCurrentCeleb] = useState(null);
           const [guess, setGuess] = useState("");
           const [attemptsLeft, setAttemptsLeft] = useState(MAX_ATTEMPTS);
-          const [gameState, setGameState] = useState('playing'); // playing, won, lost
+          const [gameState, setGameState] = useState('playing');
           const [message, setMessage] = useState("");
           const [showHint, setShowHint] = useState(false);
           const [isImageLoading, setIsImageLoading] = useState(false);
           const [gameStarted, setGameStarted] = useState(false);
           const [timeLeft, setTimeLeft] = useState(GAME_TIME_LIMIT);
           const [skipUsed, setSkipUsed] = useState(false);
-          const [skipAvailable, setSkipAvailable] = useState(true); // Começa true para primeira pessoa
-          const [canSkipNext, setCanSkipNext] = useState(false); // Se pode pular a PRÓXIMA pessoa
+          const [skipAvailable, setSkipAvailable] = useState(true);
+          const [canSkipNext, setCanSkipNext] = useState(false);
           
-          // Novos estados para controle de sequência
           const [shuffledCelebrities, setShuffledCelebrities] = useState([]);
           const [currentIndex, setCurrentIndex] = useState(0);
           const [gameFinished, setGameFinished] = useState(false);
@@ -239,7 +254,7 @@
           const handleTimeUp = () => {
             setGameState('lost');
             setMessage("⏰ Tempo esgotado! Game Over!");
-            setCanSkipNext(false); // Se perdeu, não pode pular próxima
+            setCanSkipNext(false);
           };
 
           // Função para iniciar o jogo
@@ -250,8 +265,8 @@
             setCurrentIndex(0);
             setShuffledCelebrities(shuffleArray(CELEBRITIES));
             setSkipUsed(false);
-            setSkipAvailable(true); // PRIMEIRA pessoa sempre pode ser pulada
-            setCanSkipNext(false); // Começa sem poder pular próxima
+            setSkipAvailable(true);
+            setCanSkipNext(false);
           };
 
           // Função para iniciar uma nova Pessoa
@@ -269,23 +284,20 @@
             setMessage("");
             setShowHint(false);
             
-            // Lógica SIMPLES: apenas primeira pessoa pode ser pulada, depois só com acerto
             if (currentIndex === 0) {
-                // PRIMEIRA PESSOA: sempre pode pular
-                setSkipUsed(false); // Reseta o pulo
-                setSkipAvailable(true); // Pode pular
+                setSkipUsed(false);
+                setSkipAvailable(true);
             } else {
-                // DEPOIS DA PRIMEIRA: só pode pular se acertou a anterior (canSkipNext)
                 if (canSkipNext) {
-                    setSkipUsed(false); // Pode usar o pulo
-                    setSkipAvailable(true); // Pode pular
+                    setSkipUsed(false);
+                    setSkipAvailable(true);
                 } else {
-                    setSkipUsed(true); // Já "usou" o pulo (não pode usar)
-                    setSkipAvailable(false); // Não pode pular
+                    setSkipUsed(true);
+                    setSkipAvailable(false);
                 }
             }
             
-            setTimeLeft(GAME_TIME_LIMIT); // Reinicia o timer para 2 minutos
+            setTimeLeft(GAME_TIME_LIMIT);
 
             const imageLoadPromise = new Promise((resolve) => {
                 const newImage = new Image();
@@ -305,13 +317,11 @@
           useEffect(() => {
             if (!gameStarted) return;
 
-            // 1. Inicializa ou Reshuffle
             if (shuffledCelebrities.length === 0) {
                 setShuffledCelebrities(shuffleArray(CELEBRITIES));
                 return;
             }
 
-            // 2. Verifica se o jogo acabou
             if (currentIndex >= shuffledCelebrities.length) {
                 if (shuffledCelebrities.length > 0) {
                     setGameFinished(true);
@@ -319,7 +329,6 @@
                 return;
             }
 
-            // 3. Carrega a Pessoa no índice atual
             const celebToLoad = shuffledCelebrities[currentIndex];
             if (celebToLoad) {
                 startNewCelebrity(celebToLoad);
@@ -345,7 +354,7 @@
             if (currentCeleb.acceptedNames.includes(normalizedGuess)) {
               setGameState('won');
               setMessage(`Parabéns! É ${currentCeleb.name}!`);
-              setCanSkipNext(true); // Acertou → pode pular a PRÓXIMA pessoa
+              setCanSkipNext(true);
             } else {
               const newAttempts = attemptsLeft - 1;
               setAttemptsLeft(newAttempts);
@@ -354,7 +363,7 @@
               if (newAttempts === 0) {
                 setGameState('lost');
                 setMessage(`Game Over! Era ${currentCeleb.name}.`);
-                setCanSkipNext(false); // Errou → NÃO pode pular próxima
+                setCanSkipNext(false);
               } else {
                 setMessage("Errou! O foco aumentou só um pouquinho...");
                 
@@ -375,9 +384,9 @@
           const handleSkip = () => {
             if (gameState !== 'playing' || skipUsed || !skipAvailable) return;
             
-            setSkipUsed(true); // Marca que o pulo foi usado
+            setSkipUsed(true);
             setMessage("Pulando para a próxima Pessoa...");
-            setCanSkipNext(false); // Ao pular, NÃO ganha direito de pular próxima
+            setCanSkipNext(false);
             setTimeout(() => {
                 handleNextCelebrity();
             }, 500);
@@ -498,10 +507,10 @@
           if (!currentCeleb) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Carregando...</div>;
 
           return (
-            <div className="min-h-screen bg-slate-900 flex flex-col items-center py-10 px-4 font-sans text-slate-100">
+            <div className="min-h-screen bg-slate-900 flex flex-col items-center py-10 px-4 font-sans text-slate-100 select-none">
               
               {/* Header com Timer */}
-              <header className="mb-8 text-center w-full max-w-md">
+              <header className="mb-8 text-center w-full max-w-md select-none">
                 <div className="flex justify-between items-center mb-4">
                   <div className="text-left">
                     <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
@@ -531,7 +540,7 @@
               </header>
 
               {/* Main Game Card */}
-              <div className="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border border-slate-700">
+              <div className="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border border-slate-700 select-none">
                 
                 {/* Progress Bar de Tentativas */}
                 <div className="w-full bg-slate-700 h-2">
@@ -553,10 +562,10 @@
                     </span>
                   </div>
 
-                  {/* Image Container with "Magic Eye" Effect */}
-                  <div className="relative w-64 h-64 mb-6 rounded-lg overflow-hidden border-4 border-slate-600 shadow-inner bg-black group">
+                  {/* Image Container com proteção contra arraste */}
+                  <div className="relative w-64 h-64 mb-6 rounded-lg overflow-hidden border-4 border-slate-600 shadow-inner bg-black group select-none no-drag">
                     
-                    {/* Overlay de carregamento com Spinner animado */}
+                    {/* Overlay de carregamento */}
                     {isImageLoading && (
                         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black text-purple-400 font-bold">
                             <div className="flex flex-col items-center">
@@ -571,7 +580,8 @@
                       src={currentCeleb.image} 
                       onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/640x640/1f2937/d1d5db?text=Erro+Imagem"; }}
                       alt="Pessoa Borrada"
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover no-drag"
+                      draggable="false"
                       style={{ filter: 'blur(20px)', transform: 'scale(1.1)' }} 
                     />
 
@@ -580,16 +590,20 @@
                       src={currentCeleb.image} 
                       onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/640x640/1f2937/d1d5db?text=Erro+Imagem"; }}
                       alt="Pessoa Nítida"
-                      className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out"
+                      className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out no-drag"
+                      draggable="false"
                       style={{ 
                         clipPath: `circle(${currentRadius}% at 50% 50%)`,
                         zIndex: 10
                       }}
                     />
                     
+                    {/* Camada extra de proteção contra interações */}
+                    <div className="absolute inset-0 z-20 pointer-events-none"></div>
+                    
                     {/* Overlay for Game Over/Win */}
                     {gameState !== 'playing' && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] animate-in fade-in z-20">
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] animate-in fade-in z-30">
                         {gameState === 'won' ? (
                           <span className="text-7xl drop-shadow-lg">✅</span>
                         ) : (
